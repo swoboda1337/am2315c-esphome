@@ -1,6 +1,6 @@
 AM2315C driver taken from https://github.com/RobTillaart/AM2315 and ported to an esphome component.
 
-Example .yaml:
+Example yaml to use in esphome device config:
 
     external_components:
       - source:
@@ -15,4 +15,3 @@ Example .yaml:
         humidity:
           name: "Duct Humidity"
         update_interval: 60s
-
