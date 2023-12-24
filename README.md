@@ -2,16 +2,17 @@ AM2315C driver taken from https://github.com/RobTillaart/AM2315 and ported to an
 
 Example .yaml:
 
-external_components:
-  - source:
-      type: git
-      url: https://github.com/swoboda1337/am2315c-esphome
-      ref: main
+    external_components:
+      - source:
+          type: git
+          url: https://github.com/swoboda1337/am2315c-esphome
+          ref: main
 
-sensor:
-  - platform: am2315c
-    temperature:
-      name: "Duct Temperature"
-    humidity:
-      name: "Duct Humidity"
-    update_interval: 60s
+    sensor:
+      - platform: am2315c
+        temperature:
+          name: "Duct Temperature"
+        humidity:
+          name: "Duct Humidity"
+        update_interval: 60s
+
