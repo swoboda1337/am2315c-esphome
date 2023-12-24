@@ -1,4 +1,4 @@
-AM2315C driver taken from https://github.com/RobTillaart/AM2315 and ported to an esphome component.
+AM2315C driver taken from [https://github.com/RobTillaart/AM2315](https://github.com/RobTillaart/AM2315C) and ported to an esphome component.
 
 Example yaml to use in esphome device config:
 
