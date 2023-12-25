@@ -7,11 +7,6 @@ Example yaml to use in esphome device config:
           type: local
           path: components
 
-    switch:
-      - platform: gpio
-        name: "Humidifier"
-        pin: 32
-
     sensor:
       - platform: am2315c
         temperature:
