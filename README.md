@@ -4,8 +4,9 @@ Example yaml to use in esphome device config:
 
     external_components:
       - source:
-          type: local
-          path: components
+          type: git
+          url: https://github.com/swoboda1337/am2315c-esphome
+          ref: main
 
     sensor:
       - platform: am2315c
