@@ -11,9 +11,9 @@ Example yaml to use in esphome device config:
     sensor:
       - platform: am2315c
         temperature:
-          name: "Duct Temperature"
+          name: "Temperature"
         humidity:
-          name: "Duct Humidity"
+          name: "Humidity"
         update_interval: 60s
 
     i2c:
