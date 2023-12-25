@@ -2,19 +2,19 @@ AM2315C driver taken from [https://github.com/RobTillaart/AM2315C](https://githu
 
 Example yaml to use in esphome device config:
 
-	switch:
-	  - platform: gpio
-	    name: "Humidifier"
-	    pin: 32
+  external_components:
+    - source:
+        type: local
+        path: components
 
-	sensor:
-	  - platform: am2315c
-	    temperature:
-	      name: "Duct Temperature"
-	    humidity:
-	      name: "Duct Humidity"
-	    update_interval: 60s
+  sensor:
+    - platform: am2315c
+      temperature:
+        name: "Duct Temperature"
+      humidity:
+        name: "Duct Humidity"
+      update_interval: 60s
 
-	i2c:
-	  sda: 21
-	  scl: 22
+  i2c:
+    sda: 21
+    scl: 22
