@@ -137,7 +137,6 @@ void AM2315C::update() {
   
   // convert
   convert(data, humidity, temperature);
-  ESP_LOGD(TAG, "Got temperature=%.1f°C humidity=%.1f%%", temperature, humidity);
   if (this->temperature_sensor_ != nullptr)
     this->temperature_sensor_->publish_state(temperature);
   if (this->humidity_sensor_ != nullptr)
