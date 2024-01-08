@@ -89,10 +89,6 @@ bool AM2315C::convert(uint8_t *data, float &humidity, float &temperature) {
 }
 
 void AM2315C::update() {
-  float temperature = 0.0;
-  float humidity = 0.0;
-  uint8_t data[7];
-
   //  do not read too fast
   if ((last_read > 0) && (esphome::millis() - last_read < 2000)) {
     ESP_LOGW(TAG, "Reading too often!");
@@ -104,6 +100,7 @@ void AM2315C::update() {
   reset_sensor();
 
   // request
+  uint8_t data[3];
   data[0] = 0xAC;
   data[1] = 0x33;
   data[2] = 0x00;
@@ -115,6 +112,10 @@ void AM2315C::update() {
   
   // wait
   this->set_timeout(100, [this]() {
+    float temperature = 0.0;
+    float humidity = 0.0;
+    uint8_t data[7];
+    
     // check
     if ((read_status() & 0x80) == 0x80) {
       ESP_LOGE(TAG, "HW still busy!");
