@@ -112,10 +112,6 @@ void AM2315C::update() {
   
   // wait
   this->set_timeout(160, [this]() {
-    float temperature = 0.0;
-    float humidity = 0.0;
-    uint8_t data[7];
-    
     // check
     if ((read_status() & 0x80) == 0x80) {
       ESP_LOGE(TAG, "HW still busy!");
@@ -124,6 +120,7 @@ void AM2315C::update() {
     }
     
     // read
+    uint8_t data[7];
     if (this->read(data, 7) != i2c::ERROR_OK) {
       ESP_LOGE(TAG, "Read failed!");
       this->mark_failed();
@@ -142,6 +139,8 @@ void AM2315C::update() {
     }  
     
     // convert
+    float temperature = 0.0;
+    float humidity = 0.0;
     if (convert(data, humidity, temperature)) {
       if (this->temperature_sensor_ != nullptr)
         this->temperature_sensor_->publish_state(temperature);
