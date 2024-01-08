@@ -148,7 +148,7 @@ void AM2315C::update() {
     if (this->humidity_sensor_ != nullptr)
       this->humidity_sensor_->publish_state(humidity);
     this->status_clear_warning();
-  }
+  });
 }
 
 void AM2315C::setup() {
