@@ -149,6 +149,7 @@ void AM2315C::update() {
       this->status_clear_warning();
     } else {
       ESP_LOGW(TAG, "CRC failed!");
+      this->status_set_warning();
     }
   });
 }
