@@ -59,7 +59,7 @@ bool AM2315C::reset_register(uint8_t reg) {
   data[0] = reg;
   data[1] = 0;
   data[2] = 0;
-  ESP_LOGW(TAG, "Reset register: 0x%02x": reg);
+  ESP_LOGD(TAG, "Reset register: 0x%02x", reg);
   if (this->write(data, 3) != i2c::ERROR_OK) {
     ESP_LOGW(TAG, "Write failed!");
     return false;
@@ -108,7 +108,7 @@ void AM2315C::update() {
   data[1] = 0x33;
   data[2] = 0x00;
   if (this->write(data, 3) != i2c::ERROR_OK) {
-    ESP_LOGW(TAG, "Write failed!");
+    ESP_LOGE(TAG, "Write failed!");
     this->mark_failed();
     return;
   }
@@ -117,14 +117,14 @@ void AM2315C::update() {
   this->set_timeout(100, [this]() {
     // check
     if ((read_status() & 0x80) == 0x80) {
-      ESP_LOGW(TAG, "HW still busy!");
+      ESP_LOGE(TAG, "HW still busy!");
       this->mark_failed();
       return;
     }
     
     // read
     if (this->read(data, 7) != i2c::ERROR_OK) {
-      ESP_LOGW(TAG, "Read failed!");
+      ESP_LOGE(TAG, "Read failed!");
       this->mark_failed();
       return;
     }
