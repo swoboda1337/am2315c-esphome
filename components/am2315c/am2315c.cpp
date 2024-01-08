@@ -111,7 +111,7 @@ void AM2315C::update() {
   }
   
   // wait
-  this->set_timeout(100, [this]() {
+  this->set_timeout(160, [this]() {
     float temperature = 0.0;
     float humidity = 0.0;
     uint8_t data[7];
