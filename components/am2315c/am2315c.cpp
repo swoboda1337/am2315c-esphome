@@ -142,12 +142,15 @@ void AM2315C::update() {
     }  
     
     // convert
-    convert(data, humidity, temperature);
-    if (this->temperature_sensor_ != nullptr)
-      this->temperature_sensor_->publish_state(temperature);
-    if (this->humidity_sensor_ != nullptr)
-      this->humidity_sensor_->publish_state(humidity);
-    this->status_clear_warning();
+    if (convert(data, humidity, temperature)) {
+      if (this->temperature_sensor_ != nullptr)
+        this->temperature_sensor_->publish_state(temperature);
+      if (this->humidity_sensor_ != nullptr)
+        this->humidity_sensor_->publish_state(humidity);
+      this->status_clear_warning();
+    } else {
+      ESP_LOGW(TAG, "CRC failed!");
+    }
   });
 }
 
