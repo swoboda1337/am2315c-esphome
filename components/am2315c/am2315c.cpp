@@ -33,8 +33,7 @@ uint8_t AM2315C::read_status() {
   return data;
 }
 
-uint8_t AM2315C::reset_sensor()
-{
+uint8_t AM2315C::reset_sensor() {
   // see datasheet 7.4 point 1, use with care.
   uint8_t count = 255;
   if ((read_status() & 0x18) != 0x18)
@@ -48,8 +47,7 @@ uint8_t AM2315C::reset_sensor()
   return count;
 }
 
-bool AM2315C::reset_register(uint8_t reg)
-{
+bool AM2315C::reset_register(uint8_t reg) {
   //  code based on demo code sent by www.aosong.com
   //  no further documentation.
   //  0x1B returned 18, 0, 4
@@ -61,6 +59,7 @@ bool AM2315C::reset_register(uint8_t reg)
   data[0] = reg;
   data[1] = 0;
   data[2] = 0;
+  ESP_LOGW(TAG, "Reset register: 0x%02x": reg);
   if (this->write(data, 3) != i2c::ERROR_OK) {
     ESP_LOGW(TAG, "Write failed!");
     return false;
@@ -80,8 +79,7 @@ bool AM2315C::reset_register(uint8_t reg)
   return true;
 }
 
-bool AM2315C::convert(uint8_t *data, float &humidity, float &temperature)
-{
+bool AM2315C::convert(uint8_t *data, float &humidity, float &temperature) {
   uint32_t raw;
   raw = (data[1] << 12) | (data[2] << 4) | (data[3] >> 4);
   humidity = raw * 9.5367431640625e-5;
@@ -111,37 +109,45 @@ void AM2315C::update() {
   data[2] = 0x00;
   if (this->write(data, 3) != i2c::ERROR_OK) {
     ESP_LOGW(TAG, "Write failed!");
+    this->mark_failed();
     return;
   }
   
   // wait
-  while ((read_status() & 0x80) == 0x80) {
-    esphome::yield();
-  }
+  this->set_timeout(100, [this]() {
+    // check
+    if ((read_status() & 0x80) == 0x80) {
+      ESP_LOGW(TAG, "HW still busy!");
+      this->mark_failed();
+      return;
+    }
+    
+    // read
+    if (this->read(data, 7) != i2c::ERROR_OK) {
+      ESP_LOGW(TAG, "Read failed!");
+      this->mark_failed();
+      return;
+    }
   
-  // read
-  if (this->read(data, 7) != i2c::ERROR_OK) {
-    ESP_LOGW(TAG, "Read failed!");
-    return;
+    // check for all zeros
+    bool zeros = true;
+    for (int i = 0; i < 7; i++) {
+      zeros = zeros && (data[i] == 0);
+    }
+    if (zeros) {
+      ESP_LOGW(TAG, "Data all zeros!");
+      this->status_set_warning();
+      return;
+    }  
+    
+    // convert
+    convert(data, humidity, temperature);
+    if (this->temperature_sensor_ != nullptr)
+      this->temperature_sensor_->publish_state(temperature);
+    if (this->humidity_sensor_ != nullptr)
+      this->humidity_sensor_->publish_state(humidity);
+    this->status_clear_warning();
   }
-
-  // check for all zeros
-  bool zeros = true;
-  for (int i = 0; i < 7; i++) {
-    zeros = zeros && (data[i] == 0);
-  }
-  if (zeros) {
-    ESP_LOGW(TAG, "Data all zeros!");
-    return;
-  }  
-  
-  // convert
-  convert(data, humidity, temperature);
-  if (this->temperature_sensor_ != nullptr)
-    this->temperature_sensor_->publish_state(temperature);
-  if (this->humidity_sensor_ != nullptr)
-    this->humidity_sensor_->publish_state(humidity);
-  this->status_clear_warning();
 }
 
 void AM2315C::setup() {
