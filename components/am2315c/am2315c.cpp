@@ -47,7 +47,7 @@ uint8_t AM2315C::crc8(uint8_t *data, uint8_t len) {
 
 uint8_t AM2315C::read_status() {
   uint8_t data = 0;
-  if (this->read(&data, 1) != i2c::ERROR_OK) {
+  if (read(&data, 1) != i2c::ERROR_OK) {
     ESP_LOGW(TAG, "Read failed!");
     return false;
   }
@@ -81,18 +81,18 @@ bool AM2315C::reset_register(uint8_t reg) {
   data[1] = 0;
   data[2] = 0;
   ESP_LOGD(TAG, "Reset register: 0x%02x", reg);
-  if (this->write(data, 3) != i2c::ERROR_OK) {
+  if (write(data, 3) != i2c::ERROR_OK) {
     ESP_LOGW(TAG, "Write failed!");
     return false;
   }
   delay(5);
-  if (this->read(data, 3) != i2c::ERROR_OK) {
+  if (read(data, 3) != i2c::ERROR_OK) {
     ESP_LOGW(TAG, "Read failed!");
     return false;
   }
   delay(10);
   data[0] = 0xB0 | reg;
-  if (this->write(data, 3) != i2c::ERROR_OK) {
+  if (write(data, 3) != i2c::ERROR_OK) {
     ESP_LOGW(TAG, "Write failed!");
     return false;
   }
@@ -110,13 +110,6 @@ bool AM2315C::convert(uint8_t *data, float &humidity, float &temperature) {
 }
 
 void AM2315C::update() {
-  //  do not read too fast
-  if ((last_read > 0) && (esphome::millis() - last_read < 2000)) {
-    ESP_LOGW(TAG, "Reading too often!");
-    return;
-  }
-  last_read = esphome::millis();
-
   // reset
   reset_sensor();
 
@@ -125,26 +118,26 @@ void AM2315C::update() {
   data[0] = 0xAC;
   data[1] = 0x33;
   data[2] = 0x00;
-  if (this->write(data, 3) != i2c::ERROR_OK) {
+  if (write(data, 3) != i2c::ERROR_OK) {
     ESP_LOGE(TAG, "Write failed!");
-    this->mark_failed();
+    mark_failed();
     return;
   }
   
   // wait
-  this->set_timeout(160, [this]() {
+  set_timeout(160, [this]() {
     // check
     if ((read_status() & 0x80) == 0x80) {
       ESP_LOGE(TAG, "HW still busy!");
-      this->mark_failed();
+      mark_failed();
       return;
     }
     
     // read
     uint8_t data[7];
-    if (this->read(data, 7) != i2c::ERROR_OK) {
+    if (read(data, 7) != i2c::ERROR_OK) {
       ESP_LOGE(TAG, "Read failed!");
-      this->mark_failed();
+      mark_failed();
       return;
     }
   
@@ -155,7 +148,7 @@ void AM2315C::update() {
     }
     if (zeros) {
       ESP_LOGW(TAG, "Data all zeros!");
-      this->status_set_warning();
+      status_set_warning();
       return;
     }  
     
@@ -163,21 +156,18 @@ void AM2315C::update() {
     float temperature = 0.0;
     float humidity = 0.0;
     if (convert(data, humidity, temperature)) {
-      if (this->temperature_sensor_ != nullptr)
-        this->temperature_sensor_->publish_state(temperature);
-      if (this->humidity_sensor_ != nullptr)
-        this->humidity_sensor_->publish_state(humidity);
-      this->status_clear_warning();
+      if (temperature_sensor_ != nullptr) {
+        temperature_sensor_->publish_state(temperature);
+      }
+      if (humidity_sensor_ != nullptr) {
+        humidity_sensor_->publish_state(humidity);
+      }
+      status_clear_warning();
     } else {
       ESP_LOGW(TAG, "CRC failed!");
-      this->status_set_warning();
+      status_set_warning();
     }
   });
-}
-
-void AM2315C::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up AM2315C...");
-  last_read = 0;
 }
 
 void AM2315C::dump_config() {
@@ -192,5 +182,5 @@ void AM2315C::dump_config() {
 
 float AM2315C::get_setup_priority() const { return setup_priority::DATA; }
 
-}  // namespace am2320
+}  // namespace am2315c
 }  // namespace esphome
