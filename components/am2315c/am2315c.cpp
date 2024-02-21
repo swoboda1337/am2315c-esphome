@@ -29,9 +29,9 @@ namespace am2315c {
 
 static const char *const TAG = "am2315c";
 
-uint8_t AM2315C::crc8(uint8_t *data, uint8_t len) {
+uint8_t AM2315C::crc8_(uint8_t *data, uint8_t len) {
   uint8_t crc = 0xFF;
-  while(len--) {
+  while (len--) {
     crc ^= *data++;
     for (uint8_t i = 0; i < 8; i++) {
       if (crc & 0x80) {
@@ -45,7 +45,7 @@ uint8_t AM2315C::crc8(uint8_t *data, uint8_t len) {
   return crc;
 }
 
-bool AM2315C::reset_register(uint8_t reg) {
+bool AM2315C::reset_register_(uint8_t reg) {
   //  code based on demo code sent by www.aosong.com
   //  no further documentation.
   //  0x1B returned 18, 0, 4
@@ -80,13 +80,13 @@ bool AM2315C::reset_register(uint8_t reg) {
   return true;
 }
 
-bool AM2315C::convert(uint8_t *data, float &humidity, float &temperature) {
+bool AM2315C::convert_(uint8_t *data, float &humidity, float &temperature) {
   uint32_t raw;
   raw = (data[1] << 12) | (data[2] << 4) | (data[3] >> 4);
   humidity = raw * 9.5367431640625e-5;
   raw = ((data[3] & 0x0F) << 16) | (data[4] << 8) | data[5];
   temperature = raw * 1.9073486328125e-4 - 50;
-  return this->crc8(data, 6) == data[6];
+  return this->crc8_(data, 6) == data[6];
 }
 
 void AM2315C::setup() {
@@ -100,27 +100,26 @@ void AM2315C::setup() {
     return;
   }
 
-  // reset registers if required, according to the datasheet 
-  // this can be required after power on, although registers 
+  // reset registers if required, according to the datasheet
+  // this can be required after power on, although registers
   // never needed to be reset when tested
-  if ((status & 0x18) != 0x18)
-  {
+  if ((status & 0x18) != 0x18) {
     ESP_LOGD(TAG, "Reset AM2315C registers");
-    if (!this->reset_register(0x1B)) {
+    if (!this->reset_register_(0x1B)) {
       this->mark_failed();
       return;
     }
-    if (!this->reset_register(0x1C)) {
+    if (!this->reset_register_(0x1C)) {
       this->mark_failed();
       return;
     }
-    if (!this->reset_register(0x1E)) {
+    if (!this->reset_register_(0x1E)) {
       this->mark_failed();
       return;
     }
     delay(10);
   }
-}  
+}
 
 void AM2315C::update() {
   // request measurement
@@ -133,8 +132,8 @@ void AM2315C::update() {
     this->mark_failed();
     return;
   }
-    
-  // wait for hw to complete measurement 
+
+  // wait for hw to complete measurement
   set_timeout(160, [this]() {
     // check status
     uint8_t status = 0;
@@ -148,7 +147,7 @@ void AM2315C::update() {
       this->mark_failed();
       return;
     }
-    
+
     // read
     uint8_t data[7];
     if (this->read(data, 7) != i2c::ERROR_OK) {
@@ -156,22 +155,22 @@ void AM2315C::update() {
       this->mark_failed();
       return;
     }
-  
+
     // check for all zeros
     bool zeros = true;
-    for (int i = 0; i < 7; i++) {
-      zeros = zeros && (data[i] == 0);
+    for (unsigned char i : data) {
+      zeros = zeros && (i == 0);
     }
     if (zeros) {
       ESP_LOGW(TAG, "Data all zeros!");
       this->status_set_warning();
       return;
-    }  
-    
+    }
+
     // convert
     float temperature = 0.0;
     float humidity = 0.0;
-    if (this->convert(data, humidity, temperature)) {
+    if (this->convert_(data, humidity, temperature)) {
       if (this->temperature_sensor_ != nullptr) {
         this->temperature_sensor_->publish_state(temperature);
       }
