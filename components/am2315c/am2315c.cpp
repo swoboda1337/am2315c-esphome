@@ -186,7 +186,7 @@ void AM2315C::update() {
 }
 
 void AM2315C::dump_config() {
-  ESP_LOGD(TAG, "AM2315C:");
+  ESP_LOGCONFIG(TAG, "AM2315C:");
   LOG_I2C_DEVICE(this);
   if (this->is_failed()) {
     ESP_LOGE(TAG, "Communication with AM2315C failed!");
