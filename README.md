@@ -1,4 +1,4 @@
-AM2315C driver taken from [https://github.com/RobTillaart/AM2315C](https://github.com/RobTillaart/AM2315C) and ported to an esphome component.
+AM2315C driver taken from [https://github.com/RobTillaart/AM2315C](https://github.com/RobTillaart/AM2315C) and ported to an ESPHome component.
 
 Note this was merged into ESPHome 2024.3, this repo is deprecated, docs can be found here:
 
